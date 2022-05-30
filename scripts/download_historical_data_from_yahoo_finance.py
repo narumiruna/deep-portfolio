@@ -16,15 +16,8 @@ def main(output_dir):
 
     for symbol in tqdm(symbols):
         df: pd.DataFrame = yf.Ticker(symbol).history(period='max', interval='1d')
-        df.rename(columns={
-            'Open': 'open',
-            'High': 'high',
-            'Low': 'low',
-            'Close': 'close',
-            'Volume': 'volume'
-        },
-                  inplace=True)
-        df.index.name = 'date'
+        df.rename(columns={col: col.lower() for col in df.columns}, inplace=True)
+        df.index.name = df.index.name.lower()
 
         f = output_dir / '{}.csv'.format(symbol.lstrip('^'))
         df.to_csv(f)
