@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import click
+import pandas as pd
 import yfinance as yf
 from tqdm import tqdm
 
@@ -13,9 +14,10 @@ def main(output_dir):
 
     symbols = ['VTI', 'AGG', 'DBC', '^VIX']
 
-    series = []
     for symbol in tqdm(symbols):
-        df = yf.Ticker(symbol).history(period='max', interval='1d')
+        df: pd.DataFrame = yf.Ticker(symbol).history(period='max', interval='1d')
+        df.rename(columns={col: col.lower() for col in df.columns}, inplace=True)
+        df.index.name = df.index.name.lower()
 
         f = output_dir / '{}.csv'.format(symbol.lstrip('^'))
         df.to_csv(f)
