@@ -12,5 +12,3 @@ RUN pip install poetry \
 COPY configs configs
 COPY deepportfolio deepportfolio
 COPY tests tests
-
-RUN pytest -v -s tests
