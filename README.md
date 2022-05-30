@@ -7,3 +7,11 @@ A PyTorch implementation of [Deep Learning for Portfolio Optimization](https://a
 ```
 docker run -it --rm narumi/deep-portfolio:main bash
 ```
+
+## To-Do List
+
+- [ ] train/valid/test split
+- [ ] normalize input features
+- [ ] evaluate training results
+- [ ] rolling time window
+ 
