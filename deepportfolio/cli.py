@@ -23,6 +23,7 @@ def train(config_file):
     optimizer = cfg.optimizer(model.parameters())
 
     train_loader = cfg.train_loader()
+    valid_loader = cfg.valid_loader()
 
     trainer = cfg.trainer(
         device=device,
@@ -30,6 +31,7 @@ def train(config_file):
         loss_fn=loss_fn,
         optimizer=optimizer,
         train_loader=train_loader,
+        valid_loader=valid_loader,
     )
     trainer.fit()
 

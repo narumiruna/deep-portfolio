@@ -21,6 +21,13 @@ train_loader:
   num_workers: 4
   shuffle: true
 
+valid_loader:
+  name: PortfolioDataLoader
+  root: data/yfinance
+  batch_size: 64
+  num_workers: 4
+  shuffle: true
+
 trainer:
   name: PortfolioTrainer
   num_epochs: 100
