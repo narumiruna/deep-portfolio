@@ -16,14 +16,22 @@ optimizer:
 
 train_loader:
   name: PortfolioDataLoader
-  root: data/yfinance
+  dataset_params:
+    root: data/yfinance
+    window: 50
+    since: "2008-01-01"
+    until: "2018-01-01"
   batch_size: 64
   num_workers: 4
   shuffle: true
 
 valid_loader:
   name: PortfolioDataLoader
-  root: data/yfinance
+  dataset_params:
+    root: data/yfinance
+    window: 50
+    since: "2018-01-01"
+    until: "2022-01-01"
   batch_size: 64
   num_workers: 4
   shuffle: true
