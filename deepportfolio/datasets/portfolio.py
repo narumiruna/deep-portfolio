@@ -48,11 +48,6 @@ class PortfolioDataset(Dataset):
 
         self.prices = (self.prices - self.prices.mean()) / self.prices.std()
 
-        print(self.prices, self.prices.size())
-        print(self.returns, self.returns.size())
-        # for col in prices.columns:
-        #     print(col, prices[col].mean(), prices[col].std())
-
     def __getitem__(self, index):
         x = torch.concat([
             self.prices[index:index + self.window, :],
