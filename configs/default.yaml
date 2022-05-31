@@ -20,9 +20,9 @@ train_loader:
     root: data/yfinance
     window: 50
     since: "2008-01-01"
-    until: "2018-01-01"
+    until: "2020-01-01"
   batch_size: 64
-  num_workers: 4
+  num_workers: 1
   shuffle: true
 
 valid_loader:
@@ -30,12 +30,12 @@ valid_loader:
   dataset_params:
     root: data/yfinance
     window: 50
-    since: "2018-01-01"
+    since: "2020-01-01"
     until: "2022-01-01"
   batch_size: 64
-  num_workers: 4
+  num_workers: 1
   shuffle: true
 
 trainer:
   name: PortfolioTrainer
-  num_epochs: 100
+  num_epochs: 1000
