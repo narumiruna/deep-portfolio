@@ -17,6 +17,7 @@ class PortfolioTrainer(object):
                  model: nn.Module,
                  loss_fn: nn.Module,
                  optimizer: optim.Optimizer,
+                 scheduler: optim.lr_scheduler._LRScheduler,
                  train_loader: DataLoader,
                  valid_loader: DataLoader,
                  num_epochs: int = 100):
@@ -24,7 +25,7 @@ class PortfolioTrainer(object):
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
-        # self.scheduler = scheduler
+        self.scheduler = scheduler
         self.train_loader = train_loader
         self.valid_loader = valid_loader
         self.num_epochs = num_epochs
@@ -36,6 +37,7 @@ class PortfolioTrainer(object):
         for self.epoch in trange(self.epoch, self.num_epochs + 1):
             self.train()
             self.validate()
+            self.scheduler.step()
 
             mlflow.log_metrics(self.metrics, step=self.epoch)
 

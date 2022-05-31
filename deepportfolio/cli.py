@@ -21,6 +21,7 @@ def train(config_file):
     loss_fn = cfg.loss_fn()
 
     optimizer = cfg.optimizer(model.parameters())
+    scheduler = cfg.scheduler(optimizer)
 
     train_loader = cfg.train_loader()
     valid_loader = cfg.valid_loader()
@@ -30,6 +31,7 @@ def train(config_file):
         model=model,
         loss_fn=loss_fn,
         optimizer=optimizer,
+        scheduler=scheduler,
         train_loader=train_loader,
         valid_loader=valid_loader,
     )

@@ -1,6 +1,8 @@
 # device: mps
 device: cpu
 
+num_epochs: 100
+
 model:
   name: PortfolioNet
   input_dim: 8
@@ -11,8 +13,14 @@ loss_fn:
   name: SharpeRatioLoss
 
 optimizer:
-  name: Adam
+  name: RAdam
   lr: 1.e-3
+  weight_decay: 1.e-5
+
+scheduler:
+  name: CosineAnnealingLR
+  T_max: $num_epochs
+  eta_min: 1.e-6
 
 train_loader:
   name: PortfolioDataLoader
@@ -38,4 +46,4 @@ valid_loader:
 
 trainer:
   name: PortfolioTrainer
-  num_epochs: 1000
+  num_epochs: $num_epochs
