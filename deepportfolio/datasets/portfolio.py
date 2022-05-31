@@ -10,16 +10,19 @@ from torch.utils.data import Dataset
 @mlconfig.register
 class PortfolioDataLoader(DataLoader):
 
-    def __init__(self, root: str, **kwargs):
-        super(PortfolioDataLoader, self).__init__(PortfolioDataset(root), **kwargs)
+    def __init__(self, dataset_params: dict, **kwargs):
+        dataset = PortfolioDataset(**dataset_params)
+        super(PortfolioDataLoader, self).__init__(dataset, **kwargs)
 
 
 class PortfolioDataset(Dataset):
 
-    def __init__(self, root: str, window: int = 50):
+    def __init__(self, root: str, window: int = 50, since: str = '2008-01-01', until: str = '2022-01-01'):
         super(Dataset, self).__init__()
         self.root = Path(root)
         self.window = window
+        self.since = since
+        self.until = until
 
         self.prices = None
         self.returns = None
@@ -32,6 +35,9 @@ class PortfolioDataset(Dataset):
         for csv_file in csv_files:
             df = pd.read_csv(csv_file, parse_dates=['date'], date_parser=pd.to_datetime)
             df.set_index('date', inplace=True)
+
+            # specify date range
+            df = df.loc[self.since:self.until]
 
             s = df['close']
             s.name = '{}_close'.format(csv_file.stem)
