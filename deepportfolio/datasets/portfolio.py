@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Tuple
 
 import mlconfig
 import pandas as pd
@@ -24,11 +25,10 @@ class PortfolioDataset(Dataset):
         self.since = since
         self.until = until
 
-        self.prices = None
-        self.returns = None
-        self.prepare_data()
+        self.df = self.read_csv_files()
+        self.price_tensor, self.return_tensor = self.prepare_tensors()
 
-    def prepare_data(self):
+    def read_csv_files(self) -> pd.DataFrame:
         csv_files = [csv_file for csv_file in self.root.iterdir() if csv_file.suffix == '.csv']
 
         series = []
@@ -43,27 +43,30 @@ class PortfolioDataset(Dataset):
             s.name = '{}_close'.format(csv_file.stem)
             series.append(s)
 
-        prices = pd.concat(series, axis=1)
-        prices.dropna(inplace=True)
+        df = pd.concat(series, axis=1)
+        df.dropna(inplace=True)
 
-        returns = prices.pct_change()
+        return df
+
+    def prepare_tensors(self) -> Tuple[torch.Tensor, torch.Tensor]:
+        returns = self.df.pct_change()
         returns.rename(columns={col: col.replace('close', 'return') for col in returns.columns}, inplace=True)
 
-        self.prices = torch.tensor(prices.iloc[1:].values, dtype=torch.float32)
-        self.returns = torch.tensor(returns.iloc[1:].values, dtype=torch.float32)
+        self.price_tensor = torch.tensor(self.df.iloc[1:].values, dtype=torch.float32)
+        self.return_tensor = torch.tensor(returns.iloc[1:].values, dtype=torch.float32)
 
-        self.prices = (self.prices - self.prices.mean()) / self.prices.std()
+        self.price_tensor = (self.price_tensor - self.price_tensor.mean()) / self.price_tensor.std()
+        return self.price_tensor, self.return_tensor
 
     def __getitem__(self, index):
         x = torch.concat([
-            self.prices[index:index + self.window, :],
-            self.returns[index:index + self.window, :],
+            self.price_tensor[index:index + self.window, :],
+            self.return_tensor[index:index + self.window, :],
         ],
                          dim=1)
 
-        y = self.returns[index + 1:index + 1 + self.window, :]
-
+        y = self.return_tensor[index + 1:index + 1 + self.window, :]
         return x, y
 
     def __len__(self):
-        return len(self.prices) - self.window
+        return len(self.price_tensor) - self.window
