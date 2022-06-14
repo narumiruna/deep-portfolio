@@ -41,6 +41,13 @@ class PortfolioTrainer(object):
 
     @classmethod
     def from_config(cls, config: mlconfig.Config, **kwargs: dict) -> PortfolioTrainer:
+        """Create trainer object from config class
+
+        Args:
+            config (mlconfig.Config): trainer config
+
+        Returns PortfolioTrainer object
+        """
         device = torch.device(config.device)
 
         model = config.model()
