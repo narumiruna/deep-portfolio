@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 from tempfile import gettempdir
 
@@ -36,6 +38,38 @@ class PortfolioTrainer(object):
 
         self.epoch = 1
         self.metrics = {'best_valid_loss': float('inf')}
+
+    @classmethod
+    def from_config(cls, config: mlconfig.Config, **kwargs: dict) -> PortfolioTrainer:
+        device = torch.device(config.device)
+
+        model = config.model()
+        model.to(device)
+        logger.info('model: {}'.format(model))
+
+        loss_fn = config.loss_fn()
+        logger.info('loss function: {}'.format(loss_fn))
+
+        optimizer = config.optimizer(model.parameters())
+        logger.info('optimizer: {}'.format(optimizer))
+
+        scheduler = config.scheduler(optimizer)
+        logger.info('scheduler: {}'.format(scheduler))
+
+        train_loader = config.train_loader()
+        logger.info('train loader: {}'.format(train_loader))
+
+        valid_loader = config.valid_loader()
+        logger.info('valid loader: {}'.format(valid_loader))
+
+        return cls(device=device,
+                   model=model,
+                   loss_fn=loss_fn,
+                   optimizer=optimizer,
+                   scheduler=scheduler,
+                   train_loader=train_loader,
+                   valid_loader=valid_loader,
+                   **kwargs)
 
     def fit(self):
         for self.epoch in trange(self.epoch, self.num_epochs + 1):
