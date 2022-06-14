@@ -1,5 +1,9 @@
+from pathlib import Path
+from tempfile import gettempdir
+
 import mlconfig
 import mlflow
+import torch
 from loguru import logger
 from torch import nn
 from torch import optim
@@ -31,13 +35,15 @@ class PortfolioTrainer(object):
         self.num_epochs = num_epochs
 
         self.epoch = 1
-        self.metrics = {}
+        self.metrics = {'best_valid_loss': float('inf')}
 
     def fit(self):
         for self.epoch in trange(self.epoch, self.num_epochs + 1):
             self.train()
             self.validate()
             self.scheduler.step()
+
+            self.save_checkpoint()
 
             mlflow.log_metrics(self.metrics, step=self.epoch)
 
@@ -66,6 +72,7 @@ class PortfolioTrainer(object):
 
         self.metrics.update(dict(train_loss=loss_meter.value))
 
+    @torch.no_grad()
     def validate(self):
         self.model.eval()
 
@@ -81,3 +88,46 @@ class PortfolioTrainer(object):
             loss_meter.update(loss.item(), x.size(0))
 
         self.metrics.update(dict(valid_loss=loss_meter.value))
+
+    def save(self, f: str) -> None:
+        """Save checkpoint
+
+        Args:
+            f (str): path to save checkpoint
+        """
+        self.model.eval()
+
+        checkpoint = dict(
+            model=self.model.state_dict(),
+            optimizer=self.optimizer.state_dict(),
+            scheduler=self.scheduler.state_dict(),
+            epoch=self.epoch + 1,
+            metrics=self.metrics,
+        )
+
+        Path(f).parent.mkdir(parents=True, exist_ok=True)
+        torch.save(checkpoint, f)
+        mlflow.log_artifact(f)
+
+    def resume(self, f: str) -> None:
+        """Resume from checkpoint
+
+        Args:
+            f (str): path to checkpoint
+        """
+        checkpoint = torch.load(f, map_location=self.device)
+
+        self.model.load_state_dict(checkpoint['model'])
+        self.optimizer.load_state_dict(checkpoint['optimizer'])
+        self.scheduler.load_state_dict(checkpoint['scheduler'])
+
+        self.epoch = checkpoint['epoch']
+        self.metrics = checkpoint['metrics']
+
+    def save_checkpoint(self) -> None:
+        """Save best/last checkpoint"""
+        if self.metrics['valid_loss'] < self.metrics['best_valid_loss']:
+            self.metrics['best_valid_loss'] = self.metrics['valid_loss']
+            self.save('{}/best.pth'.format(gettempdir()))
+        else:
+            self.save('{}/last.pth'.format(gettempdir()))
