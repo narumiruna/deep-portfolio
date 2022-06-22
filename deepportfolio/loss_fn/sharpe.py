@@ -4,7 +4,7 @@ from torch import nn
 
 
 @mlconfig.register
-class SharpeRatioLoss(nn.Module):
+class SharpeLoss(nn.Module):
 
     def forward(self, out: torch.Tensor, y: torch.Tensor):
         returns = out.mul(y).sum(dim=2)
