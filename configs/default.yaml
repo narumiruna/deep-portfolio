@@ -1,16 +1,43 @@
 # device: mps
 device: cpu
-
 num_epochs: 100
+window: 50
+mean:
+  [
+    81.63406372070312,
+    87.87901306152344,
+    21.49419593811035,
+    19.403362274169922,
+    0.0004438832984305918,
+    0.00015551867545582354,
+    -0.0001759082661010325,
+    0.0027597802691161633,
+  ]
+std:
+  [
+    33.513675689697266,
+    10.125396728515625,
+    6.346401691436768,
+    9.4213285446167,
+    0.012362615205347538,
+    0.0030730939470231533,
+    0.012120685540139675,
+    0.08034330606460571,
+  ]
+
+train_valid_split: "2018-01-01"
+valid_test_split: "2020-01-01"
 
 model:
   name: PortfolioNet
   input_dim: 8
   output_dim: 4
   hidden_dim: 64
+  rnn_type: LSTM
 
 loss_fn:
-  name: SharpeRatioLoss
+  # name: SharpeRatioLoss
+  name: LogReturnLoss
 
 optimizer:
   name: RAdam
@@ -20,29 +47,50 @@ optimizer:
 scheduler:
   name: CosineAnnealingLR
   T_max: $num_epochs
-  eta_min: 1.e-6
+  eta_min: 1.e-4
 
-train_loader:
-  name: PortfolioDataLoader
-  dataset_params:
-    root: data/yfinance
-    window: 50
-    since: "2008-01-01"
-    until: "2020-01-01"
-  batch_size: 64
-  num_workers: 1
-  shuffle: true
+train_set:
+  name: PortfolioDataset
+  csv_files:
+    - data/yfinance/VTI.csv
+    - data/yfinance/AGG.csv
+    - data/yfinance/DBC.csv
+    - data/yfinance/VIX.csv
+  window: $window
+  until: $train_valid_split
+  mean: $mean
+  std: $std
 
-valid_loader:
-  name: PortfolioDataLoader
-  dataset_params:
-    root: data/yfinance
-    window: 50
-    since: "2020-01-01"
-    until: "2022-01-01"
+valid_set:
+  name: PortfolioDataset
+  csv_files:
+    - data/yfinance/VTI.csv
+    - data/yfinance/AGG.csv
+    - data/yfinance/DBC.csv
+    - data/yfinance/VIX.csv
+  window: $window
+  since: $train_valid_split
+  until: $valid_test_split
+  mean: $mean
+  std: $std
+
+test_set:
+  name: PortfolioDataset
+  csv_files:
+    - data/yfinance/VTI.csv
+    - data/yfinance/AGG.csv
+    - data/yfinance/DBC.csv
+    - data/yfinance/VIX.csv
+  window: $window
+  since: $valid_test_split
+  mean: $mean
+  std: $std
+
+dataloader:
+  name: DataLoader
   batch_size: 64
-  num_workers: 1
-  shuffle: true
+  shuffle: True
+  num_workers: 0
 
 trainer:
   name: PortfolioTrainer
