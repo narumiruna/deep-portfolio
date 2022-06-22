@@ -36,8 +36,9 @@ model:
   rnn_type: LSTM
 
 loss_fn:
-  # name: SharpeRatioLoss
-  name: LogReturnLoss
+  # name: SharpeLoss
+  name: SortinoLoss
+  # name: LogReturnLoss
 
 optimizer:
   name: RAdam
