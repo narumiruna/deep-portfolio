@@ -95,3 +95,18 @@ dataloader:
 trainer:
   name: PortfolioTrainer
   num_epochs: $num_epochs
+
+log_params:
+  num_epochs: $num_epochs
+  window: $window
+  input_dim: $model.input_dim
+  hidden_dim: $model.hidden_dim
+  rnn_type: $model.rnn_type
+  loss_fn: $loss_fn.name
+  optimizer: $optimizer.name
+  lr: $optimizer.lr
+  weight_decay: $optimizer.weight_decay
+  scheduler: $scheduler.name
+  T_max: $scheduler.T_max
+  eta_min: $scheduler.eta_min
+  batch_size: $dataloader.batch_size
