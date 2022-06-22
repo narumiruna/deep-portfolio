@@ -13,6 +13,7 @@ from torch.utils.data import DataLoader
 from tqdm import trange
 
 from ..metrics import Average
+from ..metrics import Profit
 
 
 @mlconfig.register
@@ -63,11 +64,10 @@ class PortfolioTrainer(object):
         scheduler = config.scheduler(optimizer)
         logger.info('scheduler: {}'.format(scheduler))
 
-        train_loader = config.train_loader()
-        logger.info('train loader: {}'.format(train_loader))
-
-        valid_loader = config.valid_loader()
-        logger.info('valid loader: {}'.format(valid_loader))
+        train_set = config.train_set()
+        valid_set = config.valid_set()
+        train_loader = config.dataloader(dataset=train_set)
+        valid_loader = config.dataloader(dataset=valid_set)
 
         return cls(device=device,
                    model=model,
@@ -97,6 +97,7 @@ class PortfolioTrainer(object):
         self.model.train()
 
         loss_meter = Average()
+        profit_meter = Profit()
 
         for x, y in self.train_loader:
             x = x.to(self.device)
@@ -111,13 +112,16 @@ class PortfolioTrainer(object):
 
             loss_meter.update(loss.item(), x.size(0))
 
-        self.metrics.update(dict(train_loss=loss_meter.value))
+            profit_meter.update(out, y)
+
+        self.metrics.update(dict(train_loss=loss_meter.value, train_profit=profit_meter.value))
 
     @torch.no_grad()
     def validate(self):
         self.model.eval()
 
         loss_meter = Average()
+        profit_meter = Profit()
 
         for x, y in self.valid_loader:
             x = x.to(self.device)
@@ -127,8 +131,9 @@ class PortfolioTrainer(object):
             loss = self.loss_fn(out, y)
 
             loss_meter.update(loss.item(), x.size(0))
+            profit_meter.update(out, y)
 
-        self.metrics.update(dict(valid_loss=loss_meter.value))
+        self.metrics.update(dict(valid_loss=loss_meter.value, valid_profit=profit_meter.value))
 
     def save(self, f: str) -> None:
         """Save checkpoint
