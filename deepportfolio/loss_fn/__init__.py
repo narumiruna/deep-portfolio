@@ -1,2 +1,3 @@
 from .log_return import LogReturnLoss
-from .sharpe import SharpeRatioLoss
+from .sharpe import SharpeLoss
+from .sortino import SortinoLoss
