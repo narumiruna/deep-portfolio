@@ -40,6 +40,6 @@ class PortfolioNet(nn.Sequential):
         else:
             out = F.softmax(out, dim=2)
 
-        out.mul_(self.leverage)
+        out = self.leverage * out
 
         return out
